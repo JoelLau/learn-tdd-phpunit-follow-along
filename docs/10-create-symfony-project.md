@@ -1,6 +1,10 @@
 # Create A New Symfony Project
 
-## Creating Symfony Project
-
-1. Install Symfony CLI (see [downloads page](https://symfony.com/download))
-2. Use CLI to create new project: `$ symfony new <project_name>`
+1. Create Symfony Project
+   - Install Symfony CLI (see [downloads page](https://symfony.com/download))
+   - Use CLI to create new project: `$ symfony new <project_name>`
+2. Install packages (`symfony composer require ...`):
+   - http-client
+   - doctrine
+   - maker
+   - phpunit
