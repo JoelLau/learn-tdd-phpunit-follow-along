@@ -1,1 +1,1 @@
-# Create SQL-Lite Database
+# Create SQLite Database
