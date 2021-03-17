@@ -3,6 +3,7 @@
 namespace App\Command;
 
 use App\Entity\Stock;
+use App\Http\YahooFinanceApiClient;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -44,24 +45,18 @@ class RefreshStockProfileCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        // 1. Ping Yahoo API and grab the response (a profile)]]
+        // 1. Ping Yahoo API and grab the response (a stock profile) ['statusCode' => $statusCode, 'content' => $someJsonContent]
         $symbol = $input->getArgument('symbol');
         $region = $input->getArgument('region');
         $stockProfile = $this->yahooFinanceApiClient->fetchStockProfile($symbol, $region);
 
-        // 2. Use the stock profile  to create a records if it doesn't exist
+        // Handle non 200 status code responses
+        if ($stockProfile['statusCode'] !== 200) {
+            // TODO: handle error response
+        }
 
-        // Create dummy stock
-        $stock = new Stock();
-        $stock->setCurrency($stockProfile->currency);
-        $stock->setExchangeName($stockProfile->exchangeName);
-        $stock->setSymbol($stockProfile->symbol);
-        $stock->setShortName($stockProfile->shortName);
-        $stock->setRegion($stockProfile->region);
-        $stock->setPreviousClose($stockProfile->price);
-        $stock->setPrice($stockProfile->price);
-        $priceChange = $stockProfile->price - $stockProfile->previousClose;
-        $stock->setPriceChange($priceChange);
+        // 2. Use the stock profile  to create a records if it doesn't exist
+        $stock = $this->serializer->deserialize($stockProfile['content'], Stock::class, 'json');
 
         // Store in DB
         $this->entityManager->persist($stock);

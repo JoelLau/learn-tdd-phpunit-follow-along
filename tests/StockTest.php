@@ -3,33 +3,10 @@
 namespace App\Tests;
 
 use App\Entity\Stock;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use App\Tests\DatabaseDependantTestCase;
 
-class StockTest extends KernelTestCase
+class StockTest extends DatabaseDependantTestCase
 {
-    private $entityManager;
-
-    protected function setUp(): void
-    {
-        $kernel = self::bootKernel();
-        DatabasePrimer::prime($kernel);
-
-        $this->entityManager = $kernel->getContainer()->get('doctrine')->getManager();
-    }
-
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-        $this->entityManager->close();
-        $this->entityManager = null;
-    }
-
-    /** @test */
-    public function testItWorks()
-    {
-        $this->assertTrue(true);
-    }
-
     /** @test */
     public function a_stock_record_can_be_created_in_the_database()
     {
