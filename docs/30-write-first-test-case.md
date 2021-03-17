@@ -10,10 +10,11 @@
 
 ## Creating an entity
 
-(run `composer require symfony/maker-bundle --dev` if step 1 doesn't work)
-
 1. run console make command: `symfony console make:entity Stock`
    - creates 2 files:
      - `src/Entiity/Stock.php`
      - `src/Repository/StockRepository.php`
+   - pre-requisites for command to work:
+     1. maker bundle must be installed: `composer require symfony/maker-bundle --dev` (should be installed by default)
+     2. APP_ENV must be `dev`
 2. follow through the instructions to add fields and functions
