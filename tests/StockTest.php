@@ -2,6 +2,7 @@
 
 namespace App\Tests;
 
+use App\Entity\Stock;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class StockTest extends KernelTestCase
@@ -28,13 +29,13 @@ class StockTest extends KernelTestCase
         // Arrange
         $stock = new Stock();
         $stock->setSymbol('AMZN');
-        $stock->setShortName('Amazon Inc.');
+        $stock->setShortName('Amazon Inc');
         $stock->setCurrency('USD');
         $stock->setExchangeName('Nasdaq');
         $stock->setRegion('US');
         $price = 1000;
         $previousClose = 1100;
-        $priceChange = $price = $priceChange;
+        $priceChange = $price - $previousClose;
         $stock->setPrice($price);
         $stock->setPreviousClose($previousClose);
         $stock->setPriceChange($priceChange);
