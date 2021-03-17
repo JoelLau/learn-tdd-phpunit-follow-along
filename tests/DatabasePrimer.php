@@ -14,7 +14,7 @@ class DatabasePrimer
     public static function prime(KernelInterface $kernel)
     {
         // Make sure we are in the test environment
-        if ('test' !== $kernel->getEnvironment()) {
+        if (!('test' == $kernel->getEnvironment() || 'dev' == $kernel->getEnvironment())) {
             throw new \LogicException('Primer must be executed in the test environment: ' . $kernel->getEnvironment());
         }
 
