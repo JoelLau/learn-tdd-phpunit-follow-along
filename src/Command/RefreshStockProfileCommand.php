@@ -15,14 +15,16 @@ class RefreshStockProfileCommand extends Command
     protected static $defaultName = 'app:refresh-stock-profile';
     protected static $defaultDescription = 'Add a short description for your command';
 
-    /**
-     * @var EntityManagerInterface
-     */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    /** @var YahooFinanceApiClient */
+    private $yahooFinanceApiClient;
+
+    public function __construct(EntityManagerInterface $entityManager, YahooFinanceApiClient $yahooFinanceApiClient)
     {
         $this->entityManager = $entityManager;
+        $this->yahooFinanceApiClient = $yahooFinanceApiClient;
         parent::__construct();
     }
     /**
@@ -42,16 +44,24 @@ class RefreshStockProfileCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        // 1. Ping Yahoo API and grab the response (a profile)]]
+        $symbol = $input->getArgument('symbol');
+        $region = $input->getArgument('region');
+        $stockProfile = $this->yahooFinanceApiClient->fetchStockProfile($symbol, $region);
+
+        // 2. Use the stock profile  to create a records if it doesn't exist
+
         // Create dummy stock
         $stock = new Stock();
-        $stock->setCurrency('USD');
-        $stock->setExchangeName('NasdaqGS');
-        $stock->setSymbol('AMZN');
-        $stock->setShortName('Amazon.com, Inc.');
-        $stock->setRegion('US');
-        $stock->setPreviousClose(200);
-        $stock->setPrice(200);
-        $stock->setPriceChange(200);
+        $stock->setCurrency($stockProfile->currency);
+        $stock->setExchangeName($stockProfile->exchangeName);
+        $stock->setSymbol($stockProfile->symbol);
+        $stock->setShortName($stockProfile->shortName);
+        $stock->setRegion($stockProfile->region);
+        $stock->setPreviousClose($stockProfile->price);
+        $stock->setPrice($stockProfile->price);
+        $priceChange = $stockProfile->price - $stockProfile->previousClose;
+        $stock->setPriceChange($priceChange);
 
         // Store in DB
         $this->entityManager->persist($stock);
