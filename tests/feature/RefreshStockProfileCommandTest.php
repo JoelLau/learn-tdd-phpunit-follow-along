@@ -2,6 +2,7 @@
 
 namespace App\Tests\feature;
 
+use App\Entity\Stock;
 use App\Tests\DatabasePrimer;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -28,7 +29,7 @@ class RefreshStockProfileCommmandTest extends KernelTestCase
     }
 
     /** @test */
-    public function the_refresh_stock_profile_command_behaves_correctly()
+    public function the_refresh_stock_profile_command_behaves_correctly_when_a_stock_records_does_not_exist()
     {
         // Arrange
         $application = new Application(self::$kernel);
@@ -47,7 +48,7 @@ class RefreshStockProfileCommmandTest extends KernelTestCase
         $this->assertSame('USD', $stock->getCurrency());
         $this->assertSame('NasdaqGS', $stock->getExchangeName());
         $this->assertSame('AMZN', $stock->getSymbol());
-        $this->assertSame('Amazon.com', $stock->getShortName());
+        $this->assertSame('Amazon.com, Inc.', $stock->getShortName());
         $this->assertSame('US', $stock->getRegion());
         $this->assertGreaterThan(50, $stock->getPreviousClose());
         $this->assertGreaterThan(50, $stock->getPrice());
