@@ -10,6 +10,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Serializer\SerializerInterface;
 
 class RefreshStockProfileCommand extends Command
@@ -59,12 +60,12 @@ class RefreshStockProfileCommand extends Command
         $stockProfile = $this->financeApiClient->fetchStockProfile($symbol, $region);
 
         // Handle non 200 status code responses
-        if ($stockProfile['statusCode'] !== 200) {
+        if ($stockProfile->getStatusCode() !== Response::HTTP_OK) {
             // TODO: handle error response
         }
 
         // 2. Use the stock profile  to create a records if it doesn't exist
-        $stock = $this->serializer->deserialize($stockProfile['content'], Stock::class, 'json');
+        $stock = $this->serializer->deserialize($stockProfile->getContent(), Stock::class, 'json');
 
         // Store in DB
         $this->entityManager->persist($stock);
