@@ -3,6 +3,7 @@
 namespace App\Http;
 
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
@@ -33,7 +34,7 @@ class YahooFinanceApiClient
     {
         $response = $this->httpClient->request(
             'GET',
-            'https://apidojo-yahoo-finance-v1.p.rapidapi.com/stock/v2/get-profile',
+            self::URL,
             [
                 'query' => [
                     'symbol' => $symbol,
