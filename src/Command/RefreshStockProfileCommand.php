@@ -3,7 +3,7 @@
 namespace App\Command;
 
 use App\Entity\Stock;
-use App\Http\YahooFinanceApiClient;
+use App\Http\FinanceApiClientInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -20,19 +20,19 @@ class RefreshStockProfileCommand extends Command
     /** @var EntityManagerInterface */
     private $entityManager;
 
-    /** @var YahooFinanceApiClient */
-    private $yahooFinanceApiClient;
+    /** @var FinanceApiClientInterface */
+    private $financeApiClient;
 
     /** @var SerializerInterface */
     private $serializer;
 
     public function __construct(
         EntityManagerInterface $entityManager,
-        YahooFinanceApiClient $yahooFinanceApiClient,
+        FinanceApiClientInterface $financeApiClient,
         SerializerInterface $serializer
     ) {
         $this->entityManager = $entityManager;
-        $this->yahooFinanceApiClient = $yahooFinanceApiClient;
+        $this->financeApiClient = $financeApiClient;
         $this->serializer = $serializer;
         parent::__construct();
     }
@@ -56,7 +56,7 @@ class RefreshStockProfileCommand extends Command
         // 1. Ping Yahoo API and grab the response (a stock profile) ['statusCode' => $statusCode, 'content' => $someJsonContent]
         $symbol = $input->getArgument('symbol');
         $region = $input->getArgument('region');
-        $stockProfile = $this->yahooFinanceApiClient->fetchStockProfile($symbol, $region);
+        $stockProfile = $this->financeApiClient->fetchStockProfile($symbol, $region);
 
         // Handle non 200 status code responses
         if ($stockProfile['statusCode'] !== 200) {

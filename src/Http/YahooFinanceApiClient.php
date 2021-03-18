@@ -9,7 +9,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 /**
  * Implements api described at: https://rapidapi.com/apidojo/api/yahoo-finance1?endpoint=apiendpoint_f787ce0f-17f7-40cf-a731-f141fd61cc08
  */
-class YahooFinanceApiClient
+class YahooFinanceApiClient implements FinanceApiClientInterface
 {
     /** @var HttpClientInterface */
     private $httpClient;
