@@ -73,6 +73,10 @@
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,symfony
 
+## ignore .local env files
+.env.local
+.env.*.local
+
 ###> symfony/phpunit-bridge ###
 .phpunit
 .phpunit.result.cache
