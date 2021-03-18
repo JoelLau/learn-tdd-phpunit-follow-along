@@ -2,6 +2,7 @@
 
 namespace App\Http;
 
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
@@ -14,7 +15,7 @@ class YahooFinanceApiClient
 
     private const URL = 'https://apidojo-yahoo-finance-v1.p.rapidapi.com/stock/v2/get-profile';
     private const X_RAPID_API_HOST = 'apidojo-yahoo-finance-v1.p.rapidapi.com';
-    
+
     private $rapidApiKey;
 
     public function __construct(HttpClientInterface $httpClient, String $rapidApiKey)
@@ -32,19 +33,38 @@ class YahooFinanceApiClient
     {
         $response = $this->httpClient->request(
             'GET',
-            self::URL,
+            'https://apidojo-yahoo-finance-v1.p.rapidapi.com/stock/v2/get-profile',
             [
-            'query' => [
-                'symbol' => $symbol,
-                'region' => $region,
-            ],
-            'headers' => [
-                'x-rapidapi-key' => $this->rapidApiKey,
-                'x-rapidapi-host' => self::X_RAPID_API_HOST
-            ]
+                'query' => [
+                    'symbol' => $symbol,
+                    'region' => $region,
+                ],
+                'headers' => [
+                    'x-rapidapi-host' => self::X_RAPID_API_HOST,
+                    'x-rapidapi-key' => $this->rapidApiKey
+                ]
             ]
         );
-        dd($response);
-        return [];
+
+        if ($response->getStatusCode() !== Response::HTTP_OK) {
+            // @todo handle non-200 responses
+        }
+
+        $stockProfile = json_decode($response->getContent())->price;
+        $stockProfileAsArray = [
+            'symbol' => $stockProfile->symbol,
+            'shortName' => $stockProfile->shortName,
+            'region' => $region,
+            'exchangeName' => $stockProfile->exchangeName,
+            'currency' => $stockProfile->currency,
+            'price' => $stockProfile->regularMarketPrice->raw,
+            'previousClose' => $stockProfile->regularMarketPreviousClose->raw,
+            'priceChange' => $stockProfile->regularMarketPrice->raw - $stockProfile->regularMarketPreviousClose->raw
+        ];
+
+        return [
+            'statusCode' => $response->getStatusCode(),
+            'content' => json_encode($stockProfileAsArray)
+        ];
     }
 }
