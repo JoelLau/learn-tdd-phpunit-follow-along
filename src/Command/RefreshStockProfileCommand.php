@@ -11,6 +11,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 
 class RefreshStockProfileCommand extends Command
@@ -65,13 +66,23 @@ class RefreshStockProfileCommand extends Command
             return Command::FAILURE;
         }
 
-        /**
-         *  @var Stock $stock
-         * 2. Use the stock profile  to create a records if it doesn't exist
-         */
-        $stock = $this->serializer->deserialize($stockProfile->getContent(), Stock::class, 'json');
+        // Attempt to find a xxyy
+        $symbol = json_decode($stockProfile->getContent())->symbol ?? null;
+        if ($stock = $this->entityManager->getRepository(Stock::class)->findOneBy(['symbol' => $symbol])) {
+            /**
+             *  @var Stock $stock
+             *  Update if exists
+             */
+            $stock = $this->serializer->deserialize($stockProfile->getContent(), Stock::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $stock]);
+        } else {
+            /**
+             *  @var Stock $stock
+             *  Create if doesn't exist
+             */
+            $stock = $this->serializer->deserialize($stockProfile->getContent(), Stock::class, 'json');
+        }
 
-        // Store in DB
+
         $this->entityManager->persist($stock);
         $this->entityManager->flush();
 

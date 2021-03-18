@@ -20,7 +20,7 @@ class RefreshStockProfileCommmandTest extends DatabaseDependantTestCase
         $command = $application->find('app:refresh-stock-profile');
         $commandTester = new CommandTester($command);
 
-        FakeYahooFinanceApiClient::$content = '{"symbol":"AMZN","shortName":"Amazon.com, Inc.","region":"US","exchangeName":"NasdaqGS","currency":"USD","price":3135.73,"previousClose":3091.86,"priceChange":43.86999999999989}';
+        FakeYahooFinanceApiClient::$content = '{"symbol":"AMZN","shortName":"Amazon.com, Inc.","region":"US","exchangeName":"NasdaqGS","currency":"USD","price":3135.73,"previousClose":3091.86,"priceChange":43.87}';
 
         // Act
         $commandTester->execute([
@@ -39,6 +39,55 @@ class RefreshStockProfileCommmandTest extends DatabaseDependantTestCase
         $this->assertGreaterThan(50, $stock->getPreviousClose());
         $this->assertGreaterThan(50, $stock->getPrice());
         $this->assertStringContainsString('Amazon.com, Inc. has been saved / updated.', $commandTester->getDisplay());
+    }
+
+    /** @test */
+    public function the_refresh_stock_profile_command_updates_existing_records_correctly()
+    {
+        // Arrange
+        $stock = new Stock();
+        $stock->setSymbol('AMZN');
+        $stock->setRegion('US');
+        $stock->setExchangeName('NasdaqGS');
+        $stock->setCurrency('USD');
+        $stock->setPreviousClose(3000);
+        $stock->setPrice(3100);
+        $stock->setPriceChange(100);
+        $stock->setShortName('Amazon.com, Inc.');
+
+        $this->entityManager->persist($stock);
+        $this->entityManager->flush();
+
+        $application = new Application(self::$kernel);
+        $command = $application->find('app:refresh-stock-profile');
+        $commandTester = new CommandTester($command);
+
+        FakeYahooFinanceApiClient::$statusCode = Response::HTTP_OK;
+        FakeYahooFinanceApiClient::setContent([
+            "price" => 3135.73,
+            "previous_close" => 3091.86,
+            "price_change" => 43.87
+        ]);
+
+        // Act
+        $commandStatus = $commandTester->execute([
+            'symbol' => 'AMZN',
+            'region' => 'US'
+        ]);
+        $repo  = $this->entityManager->getRepository(Stock::class);
+        $stockId = $stock->getId();
+        $stockRecord = $repo->find($stockId);
+        $stockRecordCount = $repo->createQueryBuilder('stock')
+            ->select('count(stock.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        // Assert
+        $this->assertEquals(Command::SUCCESS, $commandStatus);
+        $this->assertEquals(3135.73, $stockRecord->getPrice());
+        $this->assertEquals(3091.86, $stockRecord->getPreviousClose());
+        $this->assertEquals(43.87, $stockRecord->getPriceChange());
+        $this->assertEquals(1, $stockRecordCount);
     }
 
     /** @test */
