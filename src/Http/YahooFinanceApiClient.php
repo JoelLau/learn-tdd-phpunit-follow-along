@@ -49,7 +49,7 @@ class YahooFinanceApiClient implements FinanceApiClientInterface
         );
 
         if ($response->getStatusCode() !== Response::HTTP_OK) {
-            // @todo handle non-200 responses
+            return new JsonResponse('Finance API Client Error', Response::HTTP_BAD_REQUEST);
         }
 
         $stockProfile = json_decode($response->getContent())->price;

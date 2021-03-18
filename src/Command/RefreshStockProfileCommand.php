@@ -61,7 +61,7 @@ class RefreshStockProfileCommand extends Command
 
         // Handle non 200 status code responses
         if ($stockProfile->getStatusCode() !== Response::HTTP_OK) {
-            // TODO: handle error response
+            return Command::FAILURE;
         }
 
         // 2. Use the stock profile  to create a records if it doesn't exist
