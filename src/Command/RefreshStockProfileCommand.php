@@ -61,16 +61,21 @@ class RefreshStockProfileCommand extends Command
 
         // Handle non 200 status code responses
         if ($stockProfile->getStatusCode() !== Response::HTTP_OK) {
+            $output->writeln($stockProfile->getContent());
             return Command::FAILURE;
         }
 
-        // 2. Use the stock profile  to create a records if it doesn't exist
+        /**
+         *  @var Stock $stock
+         * 2. Use the stock profile  to create a records if it doesn't exist
+         */
         $stock = $this->serializer->deserialize($stockProfile->getContent(), Stock::class, 'json');
 
         // Store in DB
         $this->entityManager->persist($stock);
         $this->entityManager->flush();
 
+        $output->writeln($stock->getShortName() . ' has been saved / updated.');
         return Command::SUCCESS;
     }
 }
