@@ -2,13 +2,15 @@
 
 namespace App\Http;
 
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * Implements api described at: https://rapidapi.com/apidojo/api/yahoo-finance1?endpoint=apiendpoint_f787ce0f-17f7-40cf-a731-f141fd61cc08
  */
-class YahooFinanceApiClient
+class YahooFinanceApiClient implements FinanceApiClientInterface
 {
     /** @var HttpClientInterface */
     private $httpClient;
@@ -27,13 +29,13 @@ class YahooFinanceApiClient
     /**
      * @var $symbol
      * @var $symbol
-     * @return array ['responseStatus' => string, 'content' => []]
+     * @return JsonResponse ['responseStatus' => string, 'content' => []]
      */
-    public function fetchStockProfile($symbol, $region): array
+    public function fetchStockProfile($symbol, $region): JsonResponse
     {
         $response = $this->httpClient->request(
             'GET',
-            'https://apidojo-yahoo-finance-v1.p.rapidapi.com/stock/v2/get-profile',
+            self::URL,
             [
                 'query' => [
                     'symbol' => $symbol,
@@ -62,9 +64,6 @@ class YahooFinanceApiClient
             'priceChange' => $stockProfile->regularMarketPrice->raw - $stockProfile->regularMarketPreviousClose->raw
         ];
 
-        return [
-            'statusCode' => $response->getStatusCode(),
-            'content' => json_encode($stockProfileAsArray)
-        ];
+        return new JsonResponse($stockProfileAsArray, Response::HTTP_OK);
     }
 }
